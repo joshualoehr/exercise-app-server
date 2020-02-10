@@ -4,49 +4,46 @@ from server import app, db
 from server.models.user import User
 
 
-def with_auth_token(name):
-    def with_auth_token_inner(route):
-        def with_auth_token_wrapper(*args, **kwargs):
-            auth_header = request.headers.get('Authorization')
-            if not auth_header:
-                return json_response(
-                    400,
-                    message='No authorization header provided'
-                )
+def with_auth_token(route):
+    def with_auth_token_wrapper(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return json_response(
+                400,
+                message='No authorization header provided'
+            )
 
-            try:
-                auth_token = auth_header.split(' ')[1]
-            except Exception:
-                return json_response(
-                    400,
-                    message='Malformed authorization header'
-                )
+        try:
+            auth_token = auth_header.split(' ')[1]
+        except Exception:
+            return json_response(
+                400,
+                message='Malformed authorization header'
+            )
 
-            if not auth_token:
-                return json_response(
-                    403,
-                    message='No auth token provided'
-                )
+        if not auth_token:
+            return json_response(
+                403,
+                message='No auth token provided'
+            )
 
-            decoded_auth_token = User.decode_auth_token(auth_token)
-            if isinstance(decoded_auth_token, str):
-                return json_response(
-                    401,
-                    message=decoded_auth_token
-                )
+        decoded_auth_token = User.decode_auth_token(auth_token)
+        if isinstance(decoded_auth_token, str):
+            return json_response(
+                401,
+                message=decoded_auth_token
+            )
 
-            decoded_auth_token['raw_token'] = auth_token
+        decoded_auth_token['raw_token'] = auth_token
 
-            return route(decoded_auth_token, *args, **kwargs)
+        return route(decoded_auth_token, *args, **kwargs)
 
-        with_auth_token_wrapper.__name__ = 'with_auth_token_wrapper_%s' % name
-        return with_auth_token_wrapper
-
-    return with_auth_token_inner
+    with_auth_token_wrapper.__name__ = 'with_auth_token_wrapper_%s' % route.__name__
+    return with_auth_token_wrapper
 
 
 def authenticated(route):
-    @with_auth_token('authenticated_wrapper')
+    @with_auth_token
     def authenticated_wrapper(auth_token, *args, **kwargs):
         user = User.query.filter_by(id=auth_token['sub']).first()
         if not user:
@@ -56,6 +53,8 @@ def authenticated(route):
             )
 
         return route(user, *args, **kwargs)
+
+    authenticated_wrapper.__name__ = 'authenticated_wrapper_%s' % route.__name__
     return authenticated_wrapper
 
 

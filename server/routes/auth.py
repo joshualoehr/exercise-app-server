@@ -90,7 +90,7 @@ def register():
 
 
 @app.route('/logout', methods=['POST'])
-@with_auth_token('logout')
+@with_auth_token
 def logout(auth_token):
     blacklist_token = BlacklistToken(token=auth_token['raw_token'])
     try:

@@ -14,7 +14,23 @@ class Workout(db.Model):
     lastUpdated = db.Column(db.DateTime, nullable=False)
 
     def __init__(self, user_id, **workout):
+        lastUpdated = workout['lastUpdated']
+        if isinstance(lastUpdated, int):
+            lastUpdated = datetime.datetime.fromtimestamp(lastUpdated)
+
         self.id = workout['id']
         self.user_id = user_id
         self.workoutName = workout['workoutName']
+        self.lastUpdated = lastUpdated
+
+    def update(self, workout):
+        self.workoutName = workout['workoutName']
         self.lastUpdated = workout['lastUpdated']
+        return self
+
+    def toJSON(self):
+        return {
+            'id': self.id,
+            'workoutName': self.workoutName,
+            'lastUpdated': self.lastUpdated
+        }
