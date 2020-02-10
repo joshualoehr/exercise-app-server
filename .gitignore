@@ -1,0 +1,7 @@
+secrets.sh
+
+**/__pycache__
+*.egg-info
+migrations
+.venv
+.vscode
