@@ -1,1 +1,2 @@
-__all__ = ['user', 'blacklist_token']
+__all__ = ['user', 'blacklist_token', 'exercise',
+           'exerciseInstance', 'workout', 'workoutInstance']

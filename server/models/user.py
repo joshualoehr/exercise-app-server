@@ -12,6 +12,7 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     last_updated = db.Column(db.DateTime, nullable=False)
+    workouts = db.relationship('Workout')
 
     def __init__(self, email, password):
         self.email = email
