@@ -28,33 +28,23 @@ def get_workoutInstances(user, workoutId):
 @app.route('/workouts/<int:workoutId>/workoutInstances/<int:id>', methods=['GET', 'POST', 'PUT', 'DELETE'])
 @authenticated
 def workoutInstance(user, workoutId, id):
-    if request.method == 'GET':
-        return get_workoutInstance(user.id, workoutId, id)
-    elif request.method == 'POST':
-        return post_workoutInstance(user.id, workoutId, id)
-    elif request.method == 'PUT':
-        return put_workoutInstance(user.id, workoutId, id)
-    elif request.method == 'DELETE':
-        return delete_workoutInstance(user.id, workoutId, id)
-    else:
-        abort(405)
-    # try:
-    #     if request.method == 'GET':
-    #         return get_workoutInstance(user.id, workoutId, id)
-    #     elif request.method == 'POST':
-    #         return post_workoutInstance(user.id, workoutId, id)
-    #     elif request.method == 'PUT':
-    #         return put_workoutInstance(user.id, workoutId, id)
-    #     elif request.method == 'DELETE':
-    #         return delete_workoutInstance(user.id, workoutId, id)
-    #     else:
-    #         abort(405)
-    # except Exception as e:
-    #     return json_response(
-    #         500,
-    #         message='An error occurred, please try again',
-    #         debug_message=str(e)
-    #     )
+    try:
+        if request.method == 'GET':
+            return get_workoutInstance(user.id, workoutId, id)
+        elif request.method == 'POST':
+            return post_workoutInstance(user.id, workoutId, id)
+        elif request.method == 'PUT':
+            return put_workoutInstance(user.id, workoutId, id)
+        elif request.method == 'DELETE':
+            return delete_workoutInstance(user.id, workoutId, id)
+        else:
+            abort(405)
+    except Exception as e:
+        return json_response(
+            500,
+            message='An error occurred, please try again',
+            debug_message=str(e)
+        )
 
 
 def with_workoutInstance(func):
