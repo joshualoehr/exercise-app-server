@@ -20,18 +20,13 @@ class ExerciseInstance(db.Model):
     sets = db.Column(db.JSON, nullable=False)
     lastUpdated = db.Column(db.DateTime, nullable=False)
 
-    def __init__(self, user_id, **exerciseInstance):
-        lastUpdated = exerciseInstance['lastUpdated']
-        if isinstance(lastUpdated, int):
-            lastUpdated = datetime.datetime.fromtimestamp(lastUpdated)
-            exerciseInstance['lastUpdated'] = lastUpdated
-
+    def __init__(self, user_id, workoutInstanceId, **exerciseInstance):
         self.id = exerciseInstance['id']
         self.user_id = user_id
+        self.workoutInstanceId = workoutInstanceId
         self.update(exerciseInstance)
 
     def update(self, exerciseInstance):
-        self.workoutInstanceId = exerciseInstance['workoutInstanceId']
         self.exerciseName = exerciseInstance['exerciseName']
         self.maxReps = exerciseInstance['maxReps']
         self.weight = exerciseInstance['weight']

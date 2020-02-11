@@ -3,6 +3,7 @@ import jwt
 
 from server import app, db, bcrypt
 from server.models.blacklist_token import BlacklistToken
+from server.models.workout import Workout
 
 
 class User(db.Model):

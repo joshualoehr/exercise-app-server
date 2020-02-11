@@ -14,11 +14,6 @@ class Workout(db.Model):
     lastUpdated = db.Column(db.DateTime, nullable=False)
 
     def __init__(self, user_id, **workout):
-        lastUpdated = workout['lastUpdated']
-        if isinstance(lastUpdated, int):
-            lastUpdated = datetime.datetime.fromtimestamp(lastUpdated)
-            workout['lastUpdated'] = lastUpdated
-
         self.id = workout['id']
         self.user_id = user_id
         self.update(workout)

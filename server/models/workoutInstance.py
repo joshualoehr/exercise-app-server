@@ -19,14 +19,10 @@ class WorkoutInstance(db.Model):
     lastUpdated = db.Column(db.DateTime, nullable=False)
     exericseInstances = db.relation('ExericseInstance')
 
-    def __init__(self, user_id, **workoutInstance):
-        lastUpdated = workoutInstance['lastUpdated']
-        if isinstance(lastUpdated, int):
-            lastUpdated = datetime.datetime.fromtimestamp(lastUpdated)
-            workoutInstance['lastUpdated'] = lastUpdated
-
+    def __init__(self, user_id, workoutId, **workoutInstance):
         self.id = workoutInstance['id']
         self.user_id = user_id
+        self.workoutId = workoutId
         self.update(workoutInstance)
 
     def update(self, workoutInstance):

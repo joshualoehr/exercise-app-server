@@ -20,18 +20,13 @@ class Exercise(db.Model):
     weight = db.Column(db.Integer, nullable=False)
     lastUpdated = db.Column(db.DateTime, nullable=False)
 
-    def __init__(self, user_id, **exercise):
-        lastUpdated = exercise['lastUpdated']
-        if isinstance(lastUpdated, int):
-            lastUpdated = datetime.datetime.fromtimestamp(lastUpdated)
-            exercise['lastUpdated'] = lastUpdated
-
+    def __init__(self, user_id, workoutId, **exercise):
         self.id = exercise['id']
         self.user_id = user_id
+        self.workoutId = workoutId
         self.update(exercise)
 
     def update(self, exercise):
-        self.workoutId = exercise['workoutId']
         self.exerciseName = exercise['exerciseName']
         self.numSets = exercise['numSets']
         self.numReps = exercise['numReps']
@@ -41,6 +36,7 @@ class Exercise(db.Model):
 
     def toJSON(self):
         return {
+            'user_id': self.user_id,
             'id': self.id,
             'workoutId': self.workoutId,
             'exerciseName': self.exerciseName,

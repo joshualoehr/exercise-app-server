@@ -51,14 +51,14 @@ def with_workout(func):
         except KeyError:
             return json_response(400, message='No workout provided')
 
-        if workout['id'] != id:
-            return json_response(400, message='Workout id does not match route')
+        workout['id'] = id
 
         lastUpdated = workout['lastUpdated']
         if isinstance(lastUpdated, int):
             lastUpdated = datetime.datetime.fromtimestamp(
                 workout['lastUpdated'])
         workout['lastUpdated'] = lastUpdated
+        print(lastUpdated)
 
         return func(workout, user_id, id)
 
