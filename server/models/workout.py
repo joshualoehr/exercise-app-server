@@ -17,11 +17,11 @@ class Workout(db.Model):
         lastUpdated = workout['lastUpdated']
         if isinstance(lastUpdated, int):
             lastUpdated = datetime.datetime.fromtimestamp(lastUpdated)
+            workout['lastUpdated'] = lastUpdated
 
         self.id = workout['id']
         self.user_id = user_id
-        self.workoutName = workout['workoutName']
-        self.lastUpdated = lastUpdated
+        self.update(workout)
 
     def update(self, workout):
         self.workoutName = workout['workoutName']

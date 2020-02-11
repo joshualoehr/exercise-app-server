@@ -20,9 +20,27 @@ class WorkoutInstance(db.Model):
     exericseInstances = db.relation('ExericseInstance')
 
     def __init__(self, user_id, **workoutInstance):
+        lastUpdated = workoutInstance['lastUpdated']
+        if isinstance(lastUpdated, int):
+            lastUpdated = datetime.datetime.fromtimestamp(lastUpdated)
+            workoutInstance['lastUpdated'] = lastUpdated
+
         self.id = workoutInstance['id']
         self.user_id = user_id
+        self.update(workoutInstance)
+
+    def update(self, workoutInstance):
         self.workoutId = workoutInstance['workoutId']
         self.date = workoutInstance['date']
         self.recordedWeight = workoutInstance['recordedWeight']
         self.lastUpdated = workoutInstance['lastUpdated']
+        return self
+
+    def toJSON(self):
+        return {
+            'id': self.id,
+            'workoutId': self.workoutId,
+            'date': self.date,
+            'recordedWeight': self.recordedWeight,
+            'lastUpdated': self.lastUpdated
+        }

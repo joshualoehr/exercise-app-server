@@ -21,10 +21,31 @@ class Exercise(db.Model):
     lastUpdated = db.Column(db.DateTime, nullable=False)
 
     def __init__(self, user_id, **exercise):
+        lastUpdated = exercise['lastUpdated']
+        if isinstance(lastUpdated, int):
+            lastUpdated = datetime.datetime.fromtimestamp(lastUpdated)
+            exercise['lastUpdated'] = lastUpdated
+
         self.id = exercise['id']
         self.user_id = user_id
+        self.update(exercise)
+
+    def update(self, exercise):
+        self.workoutId = exercise['workoutId']
         self.exerciseName = exercise['exerciseName']
         self.numSets = exercise['numSets']
         self.numReps = exercise['numReps']
         self.weight = exercise['weight']
         self.lastUpdated = exercise['lastUpdated']
+        return self
+
+    def toJSON(self):
+        return {
+            'id': self.id,
+            'workoutId': self.workoutId,
+            'exerciseName': self.exerciseName,
+            'numSets': self.numSets,
+            'numReps': self.numReps,
+            'weight': self.weight,
+            'lastUpdated': self.lastUpdated
+        }
