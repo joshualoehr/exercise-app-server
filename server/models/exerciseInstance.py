@@ -6,9 +6,12 @@ from server import app, db
 
 class ExerciseInstance(db.Model):
     __tablename__ = 'exerciseInstances'
-    __table_args__ = tuple(
-        db.ForeignKeyConstraint(['user_id', 'workoutId'], [
-            'workoutInstances.user_id', 'workoutInstances.id'], name='fk_workoutInstances_exerciseInstances')
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['user_id', 'workoutInstanceId'],
+            ['workoutInstances.user_id', 'workoutInstances.id'],
+            name='fk_workoutInstances_exerciseInstances'
+        ),
     )
 
     id = db.Column(db.Integer, primary_key=True)

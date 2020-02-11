@@ -8,8 +8,9 @@ class Workout(db.Model):
     __tablename__ = 'workouts'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey(
-        'users.id'), primary_key=True)
+    user_id = db.Column(db.Integer,
+                        db.ForeignKey('users.id'),
+                        primary_key=True)
     workoutName = db.Column(db.String(255), nullable=False)
     lastUpdated = db.Column(db.DateTime, nullable=False)
 

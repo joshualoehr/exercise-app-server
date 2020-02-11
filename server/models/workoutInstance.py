@@ -2,13 +2,18 @@ import datetime
 import jwt
 
 from server import app, db
+from server.models.workout import Workout
+from server.models.exerciseInstance import ExerciseInstance
 
 
 class WorkoutInstance(db.Model):
     __tablename__ = 'workoutInstances'
-    __table_args__ = tuple(
-        db.ForeignKeyConstraint(['user_id', 'workoutId'], [
-            'workouts.user_id', 'workouts.id'], name='fk_workouts_workoutInstances')
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['user_id', 'workoutId'],
+            ['workouts.user_id', 'workouts.id'],
+            name='fk_workouts_workoutInstances'
+        ),
     )
 
     id = db.Column(db.Integer, primary_key=True)
@@ -17,15 +22,16 @@ class WorkoutInstance(db.Model):
     date = db.Column(db.DateTime, nullable=False)
     recordedWeight = db.Column(db.Integer, nullable=False)
     lastUpdated = db.Column(db.DateTime, nullable=False)
-    exericseInstances = db.relation('ExericseInstance')
+    exerciseInstances = db.relation('ExerciseInstance')
 
-    def __init__(self, user_id, workoutId, **workoutInstance):
+    def __init__(self, user_id, **workoutInstance):
         self.id = workoutInstance['id']
         self.user_id = user_id
-        self.workoutId = workoutId
+        self.workoutId = workoutInstance['workoutId']
         self.update(workoutInstance)
 
     def update(self, workoutInstance):
+        print(workoutInstance)
         self.workoutId = workoutInstance['workoutId']
         self.date = workoutInstance['date']
         self.recordedWeight = workoutInstance['recordedWeight']
