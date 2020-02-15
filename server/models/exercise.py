@@ -1,4 +1,3 @@
-import datetime
 import jwt
 
 from server import app, db
@@ -39,7 +38,6 @@ class Exercise(db.Model):
 
     def toJSON(self):
         return {
-            'user_id': self.user_id,
             'id': self.id,
             'workoutId': self.workoutId,
             'exerciseName': self.exerciseName,

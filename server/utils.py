@@ -1,3 +1,4 @@
+import datetime
 from flask import make_response, jsonify, request
 
 from server import app, db
@@ -67,3 +68,10 @@ def json_response(status_code, debug_message=None, **kwargs):
     if app.config.get('DEBUG') and debug_message is not None:
         response_object['debug_message'] = debug_message
     return make_response(jsonify(response_object)), status_code
+
+
+def convert_timestamp(timestamp):
+    if isinstance(timestamp, int):
+        timestamp = datetime.datetime.fromtimestamp(
+            timestamp)
+    return timestamp

@@ -1,10 +1,8 @@
-import datetime
-
 from server import app, db
 from flask import abort, request
 
 from server.models.exercise import Exercise
-from server.utils import authenticated, json_response
+from server.utils import authenticated, convert_timestamp, json_response
 
 
 @app.route('/workouts/<int:workoutId>/exercises')
@@ -56,12 +54,8 @@ def with_exercise(func):
 
         exercise['id'] = id
         exercise['workoutId'] = workoutId
-
-        lastUpdated = exercise['lastUpdated']
-        if isinstance(lastUpdated, int):
-            lastUpdated = datetime.datetime.fromtimestamp(
-                exercise['lastUpdated'])
-        exercise['lastUpdated'] = lastUpdated
+        exercise['lastUpdated'] = convert_timestamp(
+            exercise['lastUpdated'])
 
         return func(exercise, user_id, workoutId, id)
 

@@ -1,11 +1,9 @@
-import datetime
-
 from server import app, db
 from flask import abort, request
 
 from server.models.workout import Workout
 from server.models.workoutInstance import WorkoutInstance
-from server.utils import authenticated, json_response
+from server.utils import authenticated, convert_timestamp, json_response
 
 
 @app.route('/workouts/<int:workoutId>/workoutInstances')
@@ -65,18 +63,10 @@ def with_workoutInstance(func):
             return json_response(404, message='Workout %d not found' % workoutId)
 
         workoutInstance['workoutId'] = workoutId
-
-        date = workoutInstance['date']
-        if isinstance(date, int):
-            date = datetime.datetime.fromtimestamp(
-                workoutInstance['date'])
-        workoutInstance['date'] = date
-
-        lastUpdated = workoutInstance['lastUpdated']
-        if isinstance(lastUpdated, int):
-            lastUpdated = datetime.datetime.fromtimestamp(
-                workoutInstance['lastUpdated'])
-        workoutInstance['lastUpdated'] = lastUpdated
+        workoutInstance['date'] = convert_timestamp(
+            workoutInstance['date'])
+        workoutInstance['lastUpdated'] = convert_timestamp(
+            workoutInstance['lastUpdated'])
 
         return func(workoutInstance, user_id, workoutId, id)
 
