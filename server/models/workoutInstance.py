@@ -4,6 +4,7 @@ import jwt
 from server import app, db
 from server.models.workout import Workout
 from server.models.exerciseInstance import ExerciseInstance
+from server.utils import convert_timestamp
 
 
 class WorkoutInstance(db.Model):
@@ -33,7 +34,7 @@ class WorkoutInstance(db.Model):
     def update(self, workoutInstance):
         print(workoutInstance)
         self.workoutId = workoutInstance['workoutId']
-        self.date = workoutInstance['date']
+        self.date = convert_timestamp(workoutInstance['date'])
         self.recordedWeight = workoutInstance['recordedWeight']
         self.lastUpdated = workoutInstance['lastUpdated']
         return self

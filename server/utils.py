@@ -53,10 +53,24 @@ def authenticated(route):
                 message='User with id %d not found' % auth_token['sub']
             )
 
+        data = request.get_json() or {}
+        lastSync = data.get('lastSync')
+        if (lastSync):
+            user.last_updated = convert_timestamp(lastSync)
+            db.session.add(user)
+            db.session.commit()
+        else:
+            lastSync = user.last_updated
+
         return route(user, *args, **kwargs)
 
     authenticated_wrapper.__name__ = 'authenticated_wrapper_%s' % route.__name__
     return authenticated_wrapper
+
+
+def authenticated_json_response(status_code, debug_message=None, **kwargs):
+    def with_last_udpated(last_updated):
+        return json_response(status_code, debug_message=debug_message, last_updated=last_updated, **kwargs)
 
 
 def json_response(status_code, debug_message=None, **kwargs):

@@ -11,10 +11,10 @@ from server.utils import authenticated, json_response, with_auth_token
 def get_user(user):
     return json_response(
         200,
+        last_updated=user.last_updated,
         user={
             'id': user.id,
-            'email': user.email,
-            'last_updated': user.last_updated
+            'email': user.email
         }
     )
 

@@ -10,7 +10,7 @@ from server.utils import authenticated, convert_timestamp, json_response
 def get_workouts(user):
     try:
         workouts = Workout.query.filter_by(user_id=user.id).all()
-        return json_response(200, workouts=[workout.toJSON() for workout in workouts])
+        return json_response(200, last_updated=user.last_updated, workouts=[workout.toJSON() for workout in workouts])
     except Exception as e:
         return json_response(
             500,
@@ -24,13 +24,13 @@ def get_workouts(user):
 def workout(user, id):
     try:
         if request.method == 'GET':
-            return get_workout(user.id, id)
+            return get_workout(user, id)
         elif request.method == 'POST':
-            return post_workout(user.id, id)
+            return post_workout(user, id)
         elif request.method == 'PUT':
-            return put_workout(user.id, id)
+            return put_workout(user, id)
         elif request.method == 'DELETE':
-            return delete_workout(user.id, id)
+            return delete_workout(user, id)
         else:
             abort(405)
     except Exception as e:
@@ -42,7 +42,7 @@ def workout(user, id):
 
 
 def with_workout(func):
-    def with_workout_wrapper(user_id, id):
+    def with_workout_wrapper(user, id):
         data = request.get_json()
         try:
             workout = data['workout']
@@ -53,58 +53,58 @@ def with_workout(func):
         workout['lastUpdated'] = convert_timestamp(
             workout['lastUpdated'])
 
-        return func(workout, user_id, id)
+        return func(workout, user.id, id)
 
     with_workout_wrapper.__name__ = 'with_workout_wrapper_%s' % func.__name__
     return with_workout_wrapper
 
 
-def get_workout(user_id, id):
-    workout = Workout.query.filter_by(user_id=user_id, id=id).first()
+def get_workout(user, id):
+    workout = Workout.query.filter_by(user_id=user.id, id=id).first()
 
     if workout:
-        return json_response(200, workout=workout.toJSON())
+        return json_response(200, last_updated=user.last_updated, workout=workout.toJSON())
     else:
         return json_response(404, message='Workout %d not found' % id)
 
 
 @with_workout
-def post_workout(workout, user_id, id):
-    existing = Workout.query.filter_by(user_id=user_id, id=id).first()
+def post_workout(workout, user, id):
+    existing = Workout.query.filter_by(user_id=user.id, id=id).first()
 
     if existing:
         return json_response(400, message='Workout %d already exists' % id)
 
-    workout = Workout(user_id, **workout)
+    workout = Workout(user.id, **workout)
     db.session.add(workout)
     db.session.commit()
 
-    return json_response(201, workout=workout.toJSON())
+    return json_response(201, last_updated=user.last_updated, workout=workout.toJSON())
 
 
 @with_workout
-def put_workout(workout, user_id, id):
-    existing = Workout.query.filter_by(user_id=user_id, id=id).first()
+def put_workout(workout, user, id):
+    existing = Workout.query.filter_by(user_id=user.id, id=id).first()
 
     if existing:
         workout = existing.update(workout)
         status = 200
     else:
-        workout = Workout(user_id, **workout)
+        workout = Workout(user.id, **workout)
         status = 201
 
     db.session.add(workout)
     db.session.commit()
 
-    return json_response(status, workout=workout.toJSON())
+    return json_response(status, last_updated=user.last_updated, workout=workout.toJSON())
 
 
-def delete_workout(user_id, id):
-    workout = Workout.query.filter_by(user_id=user_id, id=id).first()
+def delete_workout(user, id):
+    workout = Workout.query.filter_by(user_id=user.id, id=id).first()
 
     if workout:
         db.session.delete(workout)
         db.session.commit()
-        return json_response(200)
+        return json_response(200, last_updated=user.last_updated)
     else:
         return json_response(404, message='Workout %d not found' % id)

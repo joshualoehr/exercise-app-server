@@ -14,7 +14,7 @@ def get_workoutInstances(user, workoutId):
             user_id=user.id,
             workoutId=workoutId
         ).all()
-        return json_response(200, workoutInstances=[workoutInstance.toJSON() for workoutInstance in workoutInstances])
+        return json_response(200, last_updated=user.last_updated, workoutInstances=[workoutInstance.toJSON() for workoutInstance in workoutInstances])
     except Exception as e:
         return json_response(
             500,
@@ -28,13 +28,13 @@ def get_workoutInstances(user, workoutId):
 def workoutInstance(user, workoutId, id):
     try:
         if request.method == 'GET':
-            return get_workoutInstance(user.id, workoutId, id)
+            return get_workoutInstance(user, workoutId, id)
         elif request.method == 'POST':
-            return post_workoutInstance(user.id, workoutId, id)
+            return post_workoutInstance(user, workoutId, id)
         elif request.method == 'PUT':
-            return put_workoutInstance(user.id, workoutId, id)
+            return put_workoutInstance(user, workoutId, id)
         elif request.method == 'DELETE':
-            return delete_workoutInstance(user.id, workoutId, id)
+            return delete_workoutInstance(user, workoutId, id)
         else:
             abort(405)
     except Exception as e:
@@ -46,7 +46,7 @@ def workoutInstance(user, workoutId, id):
 
 
 def with_workoutInstance(func):
-    def with_workoutInstance_wrapper(user_id, workoutId, id):
+    def with_workoutInstance_wrapper(user, workoutId, id):
         data = request.get_json()
         try:
             workoutInstance = data['workoutInstance']
@@ -56,7 +56,7 @@ def with_workoutInstance(func):
         workoutInstance['id'] = id
 
         workout = Workout.query.filter_by(
-            user_id=user_id,
+            user_id=user.id,
             id=workoutId
         ).first()
         if not workout:
@@ -68,15 +68,15 @@ def with_workoutInstance(func):
         workoutInstance['lastUpdated'] = convert_timestamp(
             workoutInstance['lastUpdated'])
 
-        return func(workoutInstance, user_id, workoutId, id)
+        return func(workoutInstance, user, workoutId, id)
 
     with_workoutInstance_wrapper.__name__ = 'with_workoutInstance_wrapper_%s' % func.__name__
     return with_workoutInstance_wrapper
 
 
-def get_workoutInstance(user_id, workoutId, id):
+def get_workoutInstance(user, workoutId, id):
     workoutInstance = WorkoutInstance.query.filter_by(
-        user_id=user_id,
+        user_id=user.id,
         workoutId=workoutId,
         id=id
     ).first()
@@ -88,9 +88,9 @@ def get_workoutInstance(user_id, workoutId, id):
 
 
 @with_workoutInstance
-def post_workoutInstance(workoutInstance, user_id, workoutId, id):
+def post_workoutInstance(workoutInstance, user, workoutId, id):
     existing = WorkoutInstance.query.filter_by(
-        user_id=user_id,
+        user_id=user.id,
         workoutId=workoutId,
         id=id
     ).first()
@@ -98,17 +98,17 @@ def post_workoutInstance(workoutInstance, user_id, workoutId, id):
     if existing:
         return json_response(400, message='WorkoutInstance %d already exists' % id)
 
-    workoutInstance = WorkoutInstance(user_id, **workoutInstance)
+    workoutInstance = WorkoutInstance(user.id, **workoutInstance)
     db.session.add(workoutInstance)
     db.session.commit()
 
-    return json_response(201, workoutInstance=workoutInstance.toJSON())
+    return json_response(201, last_updated=user.last_updated, workoutInstance=workoutInstance.toJSON())
 
 
 @with_workoutInstance
-def put_workoutInstance(workoutInstance, user_id, workoutId, id):
+def put_workoutInstance(workoutInstance, user, workoutId, id):
     existing = WorkoutInstance.query.filter_by(
-        user_id=user_id,
+        user_id=user.id,
         workoutId=workoutId,
         id=id
     ).first()
@@ -117,18 +117,18 @@ def put_workoutInstance(workoutInstance, user_id, workoutId, id):
         workoutInstance = existing.update(workoutInstance)
         status = 200
     else:
-        workoutInstance = WorkoutInstance(user_id, **workoutInstance)
+        workoutInstance = WorkoutInstance(user.id, **workoutInstance)
         status = 201
 
     db.session.add(workoutInstance)
     db.session.commit()
 
-    return json_response(status, workoutInstance=workoutInstance.toJSON())
+    return json_response(status, last_updated=user.last_updated, workoutInstance=workoutInstance.toJSON())
 
 
-def delete_workoutInstance(user_id, workoutId, id):
+def delete_workoutInstance(user, workoutId, id):
     workoutInstance = WorkoutInstance.query.filter_by(
-        user_id=user_id,
+        user_id=user.id,
         workoutId=workoutId,
         id=id
     ).first()
@@ -136,6 +136,6 @@ def delete_workoutInstance(user_id, workoutId, id):
     if workoutInstance:
         db.session.delete(workoutInstance)
         db.session.commit()
-        return json_response(200)
+        return json_response(200, last_updated=user.last_updated)
     else:
         return json_response(404, message='WorkoutInstance %d not found' % id)

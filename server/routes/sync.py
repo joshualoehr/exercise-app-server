@@ -17,7 +17,6 @@ def sync(user):
     else:
         try:
             data = request.get_json()['sync']
-            last_updated = data['lastUpdated']
             exercises = data['exercises']
             exerciseInstances = data['exerciseInstances']
             workouts = data['workouts']
@@ -25,7 +24,7 @@ def sync(user):
         except KeyError:
             return json_response(400, message='Invalid sync payload')
 
-        return post_sync(user, last_updated, exercises, exerciseInstances, workouts, workoutInstances)
+        return post_sync(user, exercises, exerciseInstances, workouts, workoutInstances)
 
 
 def get_sync(user):
@@ -44,7 +43,7 @@ def get_sync(user):
         workoutInstances = [workoutInstance.toJSON()
                             for workoutInstance in workoutInstances]
 
-        return json_response(200, sync={
+        return json_response(200, last_updated=user.last_updated, sync={
             'lastUpdated': user.last_updated,
             'exercises': exercises,
             'exerciseInstances': exerciseInstances,
@@ -59,60 +58,54 @@ def get_sync(user):
         )
 
 
-def post_sync(user, last_updated, exercises, exerciseInstances, workouts, workoutInstances):
-    # try:
-    db.session.query(ExerciseInstance).filter_by(
-        user_id=user.id).delete(synchronize_session=False)
-    db.session.query(Exercise).filter_by(
-        user_id=user.id).delete(synchronize_session=False)
-    db.session.query(WorkoutInstance).filter_by(
-        user_id=user.id).delete(synchronize_session=False)
-    db.session.query(Workout).filter_by(
-        user_id=user.id).delete(synchronize_session=False)
+def post_sync(user, exercises, exerciseInstances, workouts, workoutInstances):
+    try:
+        db.session.query(ExerciseInstance).filter_by(
+            user_id=user.id).delete(synchronize_session=False)
+        db.session.query(Exercise).filter_by(
+            user_id=user.id).delete(synchronize_session=False)
+        db.session.query(WorkoutInstance).filter_by(
+            user_id=user.id).delete(synchronize_session=False)
+        db.session.query(Workout).filter_by(
+            user_id=user.id).delete(synchronize_session=False)
 
-    exercises = preprocess(exercises)
-    exerciseInstances = preprocess(exerciseInstances)
-    workouts = preprocess(workouts)
-    workoutInstances = preprocess(workoutInstances)
+        exercises = preprocess(exercises)
+        exerciseInstances = preprocess(exerciseInstances)
+        workouts = preprocess(workouts)
+        workoutInstances = preprocess(workoutInstances)
 
-    print(exercises)
+        exercises = [Exercise(user.id, **exercise)
+                     for exercise in exercises]
+        exerciseInstances = [ExerciseInstance(user.id,
+                                              **exerciseInstance) for exerciseInstance in exerciseInstances]
+        workouts = [Workout(user.id, **workout) for workout in workouts]
+        workoutInstances = [WorkoutInstance(user.id,
+                                            **workoutInstance) for workoutInstance in workoutInstances]
 
-    exercises = [Exercise(user.id, **exercise)
-                 for exercise in exercises]
-    exerciseInstances = [ExerciseInstance(user.id,
-                                          **exerciseInstance) for exerciseInstance in exerciseInstances]
-    workouts = [Workout(user.id, **workout) for workout in workouts]
-    workoutInstances = [WorkoutInstance(user.id,
-                                        **workoutInstance) for workoutInstance in workoutInstances]
+        db.session.bulk_save_objects(workouts + exercises +
+                                     workoutInstances + exerciseInstances)
 
-    db.session.bulk_save_objects(workouts + exercises +
-                                 workoutInstances + exerciseInstances)
+        db.session.commit()
 
-    user.last_updated = convert_timestamp(user.last_updated)
-    db.session.add(user)
+        exercises = [exercise.toJSON() for exercise in exercises]
+        exerciseInstances = [exerciseInstance.toJSON()
+                             for exerciseInstance in exerciseInstances]
+        workouts = [workout.toJSON() for workout in workouts]
+        workoutInstances = [workoutInstance.toJSON()
+                            for workoutInstance in workoutInstances]
 
-    db.session.commit()
-
-    exercises = [exercise.toJSON() for exercise in exercises]
-    exerciseInstances = [exerciseInstance.toJSON()
-                         for exerciseInstance in exerciseInstances]
-    workouts = [workout.toJSON() for workout in workouts]
-    workoutInstances = [workoutInstance.toJSON()
-                        for workoutInstance in workoutInstances]
-
-    return json_response(200, sync={
-        'lastUpdated': user.last_updated,
-        'exercises': exercises,
-        'exerciseInstances': exerciseInstances,
-        'workouts': workouts,
-        'workoutInstances': workoutInstances
-    })
-    # except Exception as e:
-    #     return json_response(
-    #         500,
-    #         message='An error occurred, please try again',
-    #         debug_message=str(e)
-    #     )
+        return json_response(200, last_updated=user.last_updated, sync={
+            'exercises': exercises,
+            'exerciseInstances': exerciseInstances,
+            'workouts': workouts,
+            'workoutInstances': workoutInstances
+        })
+    except Exception as e:
+        return json_response(
+            500,
+            message='An error occurred, please try again',
+            debug_message=str(e)
+        )
 
 
 def preprocess(resources):
