@@ -1,5 +1,9 @@
 #!/bin/bash
-export FLASK_APP=server
-export FLASK_ENV=development
-pip install -e .
-flask run
+export JWT_PRIVATE_KEY=$(cat ~/.ssh/liftjl_rsa)
+export JWT_PUBLIC_KEY=$(cat ~/.ssh/liftjl_rsa.pub)
+
+python3 manage.py create_db
+python3 manage.py db init
+python3 manage.py db migrate
+python3 manage.py db upgrade
+flask run --host 0.0.0.0

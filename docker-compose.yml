@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  web:
+    build: .
+    depends_on:
+      - postgres
+    ports:
+      - "5000:5000"
+    networks:
+      - liftjl-network
+
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    networks:
+      - liftjl-network
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=liftjl
+      - POSTGRES_PASSWORD=1!climbing
+
+networks:
+  liftjl-network:
+    driver: bridge

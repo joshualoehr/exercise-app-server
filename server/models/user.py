@@ -25,19 +25,16 @@ class User(db.Model):
         return bcrypt.generate_password_hash(password).decode('utf-8')
 
     def encode_auth_token(self, user_id):
-        try:
-            payload = {
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, hours=1),
-                'iat': datetime.datetime.utcnow(),
-                'sub': user_id
-            }
-            return jwt.encode(
-                payload,
-                app.config.get('JWT_PRIVATE_KEY'),
-                algorithm='RS256'
-            )
-        except Exception as e:
-            return e
+        payload = {
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, hours=1),
+            'iat': datetime.datetime.utcnow(),
+            'sub': user_id
+        }
+        return jwt.encode(
+            payload,
+            app.config.get('JWT_PRIVATE_KEY'),
+            algorithm='RS256'
+        )
 
     @staticmethod
     def decode_auth_token(auth_token):

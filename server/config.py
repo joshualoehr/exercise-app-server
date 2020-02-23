@@ -1,6 +1,6 @@
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
-postgres_local_base = 'postgresql://postgres:%s@localhost/%s'
+postgres_local_base = 'postgresql://postgres:%s@postgres:5432/%s'
 database_name = 'liftjl'
 database_passwd = os.getenv('POSTGRES_PASSWORD')
 jwt_private_key = os.getenv('JWT_PRIVATE_KEY')
